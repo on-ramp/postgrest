@@ -38,7 +38,7 @@ import System.Posix.Types       (FileMode)
 import PostgREST.App         (postgrest)
 import PostgREST.Config      (AppConfig (..), configPoolTimeout',
                               prettyVersion, readOptions)
-import PostgREST.DbStructure (getDbStructure, getPgVersion)
+import PostgREST.DbStructure (getDbStructureT, getPgVersion)
 import PostgREST.Error       (PgError (PgError), checkIsFatal,
                               errorPayload)
 import PostgREST.OpenAPI     (isMalformedProxyUri)
@@ -93,7 +93,7 @@ connectionWorker mainTid pool schema refDbStructure refIsWorkerOn = do
         NotConnected                -> return ()               -- Unreachable
         Connected actualPgVersion   -> do                      -- Procede with initialization
           result <- P.use pool $ do
-            dbStructure <- HT.transaction HT.ReadCommitted HT.Read $ getDbStructure schema actualPgVersion
+            dbStructure <- HT.transaction HT.ReadCommitted HT.Read $ getDbStructureT schema actualPgVersion
             liftIO $ atomicWriteIORef refDbStructure $ Just dbStructure
           case result of
             Left e -> do
